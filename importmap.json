@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "react": "./react.js",
+    "react-dom/client": "./react-dom-client.js",
+    "@google/genai": "./google-genai.js"
+  }
+}
