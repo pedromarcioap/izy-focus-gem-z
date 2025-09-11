@@ -12,6 +12,19 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        rollupOptions: {
+          input: {
+            popup: path.resolve(__dirname, 'index.html'),
+            background: path.resolve(__dirname, 'background.ts'),
+          },
+          output: {
+            entryFileNames: `[name].js`,
+            chunkFileNames: `[name].js`,
+            assetFileNames: `[name].[ext]`
+          }
+        }
       }
     };
 });

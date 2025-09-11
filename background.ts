@@ -1,22 +1,16 @@
-// These constants are duplicated from the main app's constants.ts
-// This is necessary because service workers cannot directly import from the app's modules without a bundler.
-const initialTasks = [
-    { id: 'task-1', name: 'Deep Work Session', duration: 45 },
-    { id: 'task-2', name: 'Quick Review', duration: 25 },
-    { id: 'task-3', name: 'Creative Brainstorming', duration: 60 },
-];
-const initialStats = {
-    completedSessions: 0,
-    interruptedSessions: 0,
-    totalFocusTime: 0,
-    sessionLogs: [],
-};
+import { initialTasks, initialStats } from './constants';
+import { Task, Stats, TimerState, SessionLog } from './types';
 
+interface StoredData {
+    activeTask?: Task | null;
+    stats?: Stats;
+    timerState?: TimerState | null;
+}
 
-const getStorageData = (keys) => {
+const getStorageData = (keys: string[]): Promise<StoredData> => {
   return new Promise((resolve) => {
     chrome.storage.local.get(keys, (result) => {
-      resolve(result);
+      resolve(result as StoredData);
     });
   });
 };
@@ -25,8 +19,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === 'focusTimer') {
     const { activeTask, stats, timerState } = await getStorageData(['activeTask', 'stats', 'timerState']);
     
-    if (!activeTask || !timerState) {
-        // Alarm fired without an active task, clear it and exit.
+    if (!activeTask || !timerState || !stats) {
         chrome.alarms.clear('focusTimer');
         return;
     }
@@ -34,7 +27,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     const timeElapsedInSeconds = timerState.taskDuration;
     const actualDurationMinutes = Math.round(timeElapsedInSeconds / 60);
 
-    const sessionLog = {
+    const sessionLog: SessionLog = {
       id: `session-${Date.now()}`,
       taskId: activeTask.id,
       taskName: activeTask.name,
@@ -45,7 +38,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       status: 'completed',
     };
     
-    const newStats = {
+    const newStats: Stats = {
         ...stats,
         completedSessions: (stats.completedSessions || 0) + 1,
         totalFocusTime: (stats.totalFocusTime || 0) + actualDurationMinutes,

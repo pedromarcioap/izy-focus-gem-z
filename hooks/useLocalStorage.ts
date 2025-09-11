@@ -1,16 +1,15 @@
 
 
-declare const chrome: any;
-// @ts-ignore
-import React, { useState, useEffect, useCallback } from '../react.js';
+import { useState, useEffect, useCallback } from 'react';
+
+type SetValue<T> = (value: T | ((val: T) => T)) => void;
 
 // This hook is now adapted for chrome.storage.local which is asynchronous
-export function useLocalStorage(key, initialValue) {
-  const [storedValue, setStoredValue] = useState(initialValue);
+export function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // In a non-extension context, chrome.storage may be undefined.
     if (typeof chrome === 'undefined' || !chrome.storage?.local) {
         console.warn('chrome.storage.local is not available. Using local state only.');
         setIsInitialized(true);
@@ -20,9 +19,8 @@ export function useLocalStorage(key, initialValue) {
     try {
         chrome.storage.local.get([key], (result) => {
             if (result.hasOwnProperty(key) && result[key] !== undefined) {
-                setStoredValue(result[key]);
+                setStoredValue(result[key] as T);
             } else {
-                // If not in storage, set it with initialValue as a starting point.
                 chrome.storage.local.set({ [key]: initialValue });
                 setStoredValue(initialValue);
             }
@@ -36,31 +34,28 @@ export function useLocalStorage(key, initialValue) {
   }, [key, initialValue]);
 
   useEffect(() => {
-    // Ensure chrome.storage.onChanged is available before adding a listener.
     if (typeof chrome === 'undefined' || !chrome.storage?.onChanged) {
         return;
     }
 
-    const handleChange = (changes, areaName) => {
+    const handleChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
       if (areaName === 'local' && changes.hasOwnProperty(key)) {
-        setStoredValue(changes[key].newValue);
+        setStoredValue(changes[key].newValue as T);
       }
     };
 
     chrome.storage.onChanged.addListener(handleChange);
     return () => {
-      // Check if chrome API is available before trying to remove listener
       if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
         chrome.storage.onChanged.removeListener(handleChange);
       }
     };
   }, [key]);
 
-  const setValue = useCallback((value) => {
+  const setValue: SetValue<T> = useCallback((value) => {
     const valueToStore = value instanceof Function ? value(storedValue) : value;
     setStoredValue(valueToStore);
     
-    // Ensure chrome.storage.local is available before setting a value.
     if (typeof chrome === 'undefined' || !chrome.storage?.local) {
         return;
     }
