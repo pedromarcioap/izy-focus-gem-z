@@ -1,22 +1,20 @@
 
 
-declare const chrome: any;
-
-// @ts-ignore
-import React, { useState, useCallback, useEffect } from './react.js';
-import { useLocalStorage } from './hooks/useLocalStorage.ts';
-import Header from './components/Header.tsx';
-import Dashboard from './components/Dashboard.tsx';
-import StatsPage from './components/StatsPage.tsx';
-import { initialTasks, initialStats } from './constants.ts';
-import FocusTimer from './components/FocusTimer.tsx';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import Header from './components/Header';
+import Dashboard from './components/Dashboard';
+import StatsPage from './components/StatsPage';
+import { initialTasks, initialStats } from './constants';
+import FocusTimer from './components/FocusTimer';
+import { Task, Stats, TimerState, View, SessionLog } from './types';
 
 const App = () => {
-  const [tasks, setTasks] = useLocalStorage('tasks', initialTasks);
-  const [stats, setStats] = useLocalStorage('stats', initialStats);
-  const [activeTask, setActiveTask] = useLocalStorage('activeTask', null);
-  const [timerState, setTimerState] = useLocalStorage('timerState', null);
-  const [view, setView] = useState('DASHBOARD');
+  const [tasks, setTasks] = useLocalStorage<Task[]>('tasks', initialTasks);
+  const [stats, setStats] = useLocalStorage<Stats>('stats', initialStats);
+  const [activeTask, setActiveTask] = useLocalStorage<Task | null>('activeTask', null);
+  const [timerState, setTimerState] = useLocalStorage<TimerState | null>('timerState', null);
+  const [view, setView] = useState<View>('DASHBOARD');
 
   useEffect(() => {
     // When the popup opens, if the timer has ended (e.g. handled by background script),
@@ -26,9 +24,8 @@ const App = () => {
     }
   }, [activeTask, view]);
 
-  const handleTaskStart = (task) => {
-    const durationInMinutes = task.duration;
-    const durationInSeconds = durationInMinutes * 60;
+  const handleTaskStart = (task: Task) => {
+    const durationInSeconds = task.duration * 60;
     const targetEndTime = Date.now() + durationInSeconds * 1000;
 
     chrome.alarms.create('focusTimer', { when: targetEndTime });
@@ -37,7 +34,7 @@ const App = () => {
     setTimerState({ targetEndTime, taskDuration: durationInSeconds });
   };
 
-  const handleSessionEnd = useCallback((status, timeElapsedInSeconds) => {
+  const handleSessionEnd = useCallback((status: 'interrupted', timeElapsedInSeconds?: number) => {
     if (!activeTask) return;
 
     chrome.alarms.clear('focusTimer');
@@ -47,7 +44,7 @@ const App = () => {
     const actualDurationMinutes = Math.round(timeElapsed / 60);
 
     if (status === 'interrupted' && actualDurationMinutes > 0) {
-      const sessionLog = {
+      const sessionLog: SessionLog = {
         id: `session-${Date.now()}`,
         taskId: activeTask.id,
         taskName: activeTask.name,
@@ -71,26 +68,26 @@ const App = () => {
   }, [activeTask, timerState, setStats, setActiveTask, setTimerState]);
 
   return (
-    React.createElement("div", { className: "w-[400px] h-[550px] overflow-y-auto bg-navy text-slate font-sans flex flex-col" },
-      React.createElement(Header, { currentView: view, setView: setView }),
-      React.createElement("main", { className: "flex-grow p-4" },
-        activeTask ? (
-           React.createElement(FocusTimer, { 
-            task: activeTask,
-            onInterrupt: (timeElapsed) => handleSessionEnd('interrupted', timeElapsed)
-           })
+    <div className="w-[400px] h-[550px] overflow-y-auto bg-navy text-slate font-sans flex flex-col">
+      <Header currentView={view} setView={setView} />
+      <main className="flex-grow p-4">
+        {activeTask ? (
+           <FocusTimer
+            task={activeTask}
+            onInterrupt={(timeElapsed) => handleSessionEnd('interrupted', timeElapsed)}
+           />
         ) : view === 'DASHBOARD' ? (
-          React.createElement(Dashboard, {
-            tasks: tasks,
-            setTasks: setTasks,
-            stats: stats,
-            onTaskStart: handleTaskStart
-          })
+          <Dashboard
+            tasks={tasks}
+            setTasks={setTasks}
+            stats={stats}
+            onTaskStart={handleTaskStart}
+          />
         ) : (
-          React.createElement(StatsPage, { stats: stats })
-        )
-      )
-    )
+          <StatsPage stats={stats} />
+        )}
+      </main>
+    </div>
   );
 };
 

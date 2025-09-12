@@ -1,103 +1,125 @@
 
 
-// @ts-ignore
-import React, { useState } from '../react.js';
-import AIFeedback from './AIFeedback.tsx';
-import WeeklyGardenView from './WeeklyGardenView.tsx';
-import { useStatsCalculations, formatDuration, formatBestDay, formatWeekRange, formatMonthName } from '../hooks/useStatsCalculations.ts';
+import React, { useState } from 'react';
+import AIFeedback from './AIFeedback';
+import WeeklyGardenView from './WeeklyGardenView';
+import { useStatsCalculations, formatDuration, formatBestDay, formatWeekRange, formatMonthName } from '../hooks/useStatsCalculations';
+import { Stats } from '../types';
 
-const StatCard = ({ title, value, subtext }) => (
-    React.createElement("div", { className: "bg-navy p-4 rounded-md" },
-        React.createElement("p", { className: "text-sm text-slate" }, title),
-        React.createElement("p", { className: "text-2xl font-bold text-lightest-slate mt-1" }, value),
-        subtext && React.createElement("p", { className: "text-xs text-slate/80 mt-1" }, subtext)
-    )
+interface StatCardProps {
+  title: string;
+  value: string;
+  subtext?: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ title, value, subtext }) => (
+    <div className="bg-navy p-4 rounded-md">
+        <p className="text-sm text-slate">{title}</p>
+        <p className="text-2xl font-bold text-lightest-slate mt-1">{value}</p>
+        {subtext && <p className="text-xs text-slate/80 mt-1">{subtext}</p>}
+    </div>
 );
 
-const TabButton = ({ label, isActive, onClick }) => (
-    React.createElement("button", {
-        onClick: onClick,
-        className: `px-4 py-2 text-sm font-semibold transition-colors duration-200 focus:outline-none focus:text-brand ${
+interface TabButtonProps {
+    label: string;
+    isActive: boolean;
+    onClick: () => void;
+}
+
+const TabButton: React.FC<TabButtonProps> = ({ label, isActive, onClick }) => (
+    <button
+        onClick={onClick}
+        className={`px-4 py-2 text-sm font-semibold transition-colors duration-200 focus:outline-none focus:text-brand ${
             isActive
                 ? 'text-brand border-b-2 border-brand'
                 : 'text-slate hover:text-lightest-slate'
-        }`
-    },
-        label
-    )
+        }`}
+    >
+        {label}
+    </button>
 );
 
-const PlaceholderTab = ({ title, message }) => (
-    React.createElement("div", { className: "bg-light-navy p-10 mt-6 rounded-lg text-center border border-lightest-navy/20" },
-        React.createElement("h3", { className: "text-xl font-bold text-lightest-slate mb-2" }, title),
-        React.createElement("p", { className: "text-slate" }, message)
-    )
+interface PlaceholderTabProps {
+    title: string;
+    message: string;
+}
+
+const PlaceholderTab: React.FC<PlaceholderTabProps> = ({ title, message }) => (
+    <div className="bg-light-navy p-10 mt-6 rounded-lg text-center border border-lightest-navy/20">
+        <h3 className="text-xl font-bold text-lightest-slate mb-2">{title}</h3>
+        <p className="text-slate">{message}</p>
+    </div>
 );
 
+interface StatsPageProps {
+  stats: Stats;
+}
 
-const StatsPage = ({ stats }) => {
+type ActiveTab = 'GENERAL' | 'GARDEN' | 'TASKS' | 'MONTH';
+
+const StatsPage: React.FC<StatsPageProps> = ({ stats }) => {
   const { sessionLogs } = stats;
   const { currentStats, averageResults, bestResults } = useStatsCalculations(sessionLogs);
-  const [activeTab, setActiveTab] = useState('GENERAL');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('GENERAL');
 
   return (
-    React.createElement("div", { className: "space-y-6" },
-      React.createElement("div", { className: "text-center" },
-        React.createElement("h2", { className: "text-3xl font-bold text-lightest-slate" }, "Your Focus Journey"),
-        React.createElement("p", { className: "text-slate mt-2" }, "An overview of your productivity patterns and achievements.")
-      ),
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-lightest-slate">Your Focus Journey</h2>
+        <p className="text-slate mt-2">An overview of your productivity patterns and achievements.</p>
+      </div>
       
-      React.createElement("div", { className: "border-b border-lightest-navy/20 flex justify-center space-x-2 md:space-x-4" },
-        React.createElement(TabButton, { label: "General", isActive: activeTab === 'GENERAL', onClick: () => setActiveTab('GENERAL') }),
-        React.createElement(TabButton, { label: "Garden", isActive: activeTab === 'GARDEN', onClick: () => setActiveTab('GARDEN') }),
-        React.createElement(TabButton, { label: "Tasks", isActive: activeTab === 'TASKS', onClick: () => setActiveTab('TASKS') }),
-        React.createElement(TabButton, { label: "Month", isActive: activeTab === 'MONTH', onClick: () => setActiveTab('MONTH') })
-      ),
+      <div className="border-b border-lightest-navy/20 flex justify-center space-x-2 md:space-x-4">
+        <TabButton label="General" isActive={activeTab === 'GENERAL'} onClick={() => setActiveTab('GENERAL')} />
+        <TabButton label="Garden" isActive={activeTab === 'GARDEN'} onClick={() => setActiveTab('GARDEN')} />
+        <TabButton label="Tasks" isActive={activeTab === 'TASKS'} onClick={() => setActiveTab('TASKS')} />
+        <TabButton label="Month" isActive={activeTab === 'MONTH'} onClick={() => setActiveTab('MONTH')} />
+      </div>
 
-      React.createElement("div", null,
-        activeTab === 'GENERAL' && (
-            React.createElement("div", { className: "space-y-6" },
-                React.createElement("div", { className: "bg-light-navy p-4 md:p-6 rounded-lg" },
-                    React.createElement("h3", { className: "text-lg font-bold text-light-slate mb-4" }, "Current Stats"),
-                    React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4" },
-                        React.createElement(StatCard, { title: "Today", value: formatDuration(currentStats.today) }),
-                        React.createElement(StatCard, { title: "This week", value: formatDuration(currentStats.thisWeek) }),
-                        React.createElement(StatCard, { title: "This month", value: formatDuration(currentStats.thisMonth) })
-                    )
-                ),
+      <div>
+        {activeTab === 'GENERAL' && (
+            <div className="space-y-6">
+                <div className="bg-light-navy p-4 md:p-6 rounded-lg">
+                    <h3 className="text-lg font-bold text-light-slate mb-4">Current Stats</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <StatCard title="Today" value={formatDuration(currentStats.today)} />
+                        <StatCard title="This week" value={formatDuration(currentStats.thisWeek)} />
+                        <StatCard title="This month" value={formatDuration(currentStats.thisMonth)} />
+                    </div>
+                </div>
 
-                React.createElement("div", { className: "bg-light-navy p-4 md:p-6 rounded-lg" },
-                    React.createElement("h3", { className: "text-lg font-bold text-light-slate mb-4" }, "Average Results"),
-                    React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4" },
-                        React.createElement(StatCard, { title: "Daily", value: formatDuration(averageResults.daily) }),
-                        React.createElement(StatCard, { title: "Weekly", value: formatDuration(averageResults.weekly) }),
-                        React.createElement(StatCard, { title: "Monthly", value: formatDuration(averageResults.monthly) })
-                    )
-                ),
+                <div className="bg-light-navy p-4 md:p-6 rounded-lg">
+                    <h3 className="text-lg font-bold text-light-slate mb-4">Average Results</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <StatCard title="Daily" value={formatDuration(averageResults.daily)} />
+                        <StatCard title="Weekly" value={formatDuration(averageResults.weekly)} />
+                        <StatCard title="Monthly" value={formatDuration(averageResults.monthly)} />
+                    </div>
+                </div>
                 
-                React.createElement("div", { className: "bg-light-navy p-4 md:p-6 rounded-lg" },
-                    React.createElement("h3", { className: "text-lg font-bold text-light-slate mb-4" }, "Best Results"),
-                    React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4" },
-                        React.createElement(StatCard, { title: "Day", value: formatDuration(bestResults.day.total), subtext: formatBestDay(bestResults.day.date) }),
-                        React.createElement(StatCard, { title: "Week", value: formatDuration(bestResults.week.total), subtext: formatWeekRange(bestResults.week.date) }),
-                        React.createElement(StatCard, { title: "Month", value: formatDuration(bestResults.month.total), subtext: formatMonthName(bestResults.month.month) })
-                    )
-                ),
+                <div className="bg-light-navy p-4 md:p-6 rounded-lg">
+                    <h3 className="text-lg font-bold text-light-slate mb-4">Best Results</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <StatCard title="Day" value={formatDuration(bestResults.day.total)} subtext={formatBestDay(bestResults.day.date)} />
+                        <StatCard title="Week" value={formatDuration(bestResults.week.total)} subtext={formatWeekRange(bestResults.week.date)} />
+                        <StatCard title="Month" value={formatDuration(bestResults.month.total)} subtext={formatMonthName(bestResults.month.month)} />
+                    </div>
+                </div>
 
-                React.createElement(AIFeedback, { stats: stats })
-            )
-        ),
+                <AIFeedback stats={stats} />
+            </div>
+        )}
 
-        activeTab === 'GARDEN' && (
-            React.createElement("div", { className: "mt-4" },
-                React.createElement(WeeklyGardenView, { sessionLogs: sessionLogs })
-            )
-        ),
+        {activeTab === 'GARDEN' && (
+            <div className="mt-4">
+                <WeeklyGardenView sessionLogs={sessionLogs} />
+            </div>
+        )}
 
-        activeTab === 'TASKS' && React.createElement(PlaceholderTab, { title: "Task Stats", message: "A detailed breakdown of focus time per task is coming soon!" }),
-        activeTab === 'MONTH' && React.createElement(PlaceholderTab, { title: "Monthly Stats", message: "A monthly summary view is in the works." })
-      )
-    )
+        {activeTab === 'TASKS' && <PlaceholderTab title="Task Stats" message="A detailed breakdown of focus time per task is coming soon!" />}
+        {activeTab === 'MONTH' && <PlaceholderTab title="Monthly Stats" message="A monthly summary view is in the works." />}
+      </div>
+    </div>
   );
 };
 

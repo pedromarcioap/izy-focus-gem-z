@@ -1,7 +1,7 @@
-// @ts-ignore
-import React, { useMemo } from '../react.js';
+import { useMemo } from 'react';
+import { SessionLog } from '../types';
 
-export const formatDuration = (minutes) => {
+export const formatDuration = (minutes: number): string => {
     if (minutes < 1) {
         const seconds = Math.round(minutes * 60);
         return `${seconds} sec`;
@@ -17,12 +17,12 @@ export const formatDuration = (minutes) => {
     return `${hours} hr, ${remainingMinutes} min`;
 };
 
-export const formatBestDay = (dateStr) => {
+export const formatBestDay = (dateStr: string | Date): string => {
     if (!dateStr) return '';
     return `(${new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})`;
 };
 
-export const formatWeekRange = (startDateStr) => {
+export const formatWeekRange = (startDateStr: string | Date): string => {
     if (!startDateStr) return '';
     const start = new Date(startDateStr);
     const end = new Date(start);
@@ -31,19 +31,27 @@ export const formatWeekRange = (startDateStr) => {
     return `(${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}, ${start.getFullYear()})`;
 };
 
-export const formatMonthName = (monthKey) => {
+export const formatMonthName = (monthKey: string): string => {
     if (!monthKey) return '';
     const [year, monthIndex] = monthKey.split('-').map(Number);
     const date = new Date(year, monthIndex);
     return `(${date.toLocaleString('en-US', { month: 'long' })}, ${year})`;
 };
 
+interface StatsOutput {
+    currentStats: { today: number; thisWeek: number; thisMonth: number; };
+    averageResults: { daily: number; weekly: number; monthly: number; };
+    bestResults: {
+        day: { date: string | Date; total: number; };
+        week: { date: string | Date; total: number; };
+        month: { month: string; total: number; };
+    };
+}
 
-export const useStatsCalculations = (sessionLogs) => {
+export const useStatsCalculations = (sessionLogs: SessionLog[]): StatsOutput => {
   return useMemo(() => {
     const totalFocusTime = sessionLogs.reduce((sum, log) => sum + log.actualDuration, 0);
 
-    // --- Group data ---
     const dailyData: { [key: string]: number } = {};
     const weeklyData: { [key: string]: number } = {};
     const monthlyData: { [key: string]: number } = {};
@@ -51,11 +59,9 @@ export const useStatsCalculations = (sessionLogs) => {
     sessionLogs.forEach(log => {
         const date = new Date(log.startTime);
         
-        // Daily
         const dayKey = date.toISOString().split('T')[0];
         dailyData[dayKey] = (dailyData[dayKey] || 0) + log.actualDuration;
 
-        // Weekly (Sun-Sat) - Create a new date object to avoid mutation
         const weeklyDate = new Date(log.startTime);
         const dayOfWeek = weeklyDate.getDay();
         const diff = weeklyDate.getDate() - dayOfWeek;
@@ -64,17 +70,14 @@ export const useStatsCalculations = (sessionLogs) => {
         const weekKey = startOfWeek.toISOString().split('T')[0];
         weeklyData[weekKey] = (weeklyData[weekKey] || 0) + log.actualDuration;
 
-        // Monthly - uses the original 'date' which is not mutated
         const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
         monthlyData[monthKey] = (monthlyData[monthKey] || 0) + log.actualDuration;
     });
 
-    // --- Current Stats ---
     const now = new Date();
     const todayKey = now.toISOString().split('T')[0];
     const today = dailyData[todayKey] || 0;
     
-    // Create a new date to avoid mutating 'now'
     const currentWeekDate = new Date();
     const currentDayOfWeek = currentWeekDate.getDay();
     const currentDiff = currentWeekDate.getDate() - currentDayOfWeek;
@@ -86,7 +89,6 @@ export const useStatsCalculations = (sessionLogs) => {
     const currentMonthKey = `${now.getFullYear()}-${now.getMonth()}`;
     const thisMonth = monthlyData[currentMonthKey] || 0;
 
-    // --- Average Results ---
     const numDays = Object.keys(dailyData).length;
     const daily = numDays > 0 ? totalFocusTime / numDays : 0;
     const numWeeks = Object.keys(weeklyData).length;
@@ -94,11 +96,9 @@ export const useStatsCalculations = (sessionLogs) => {
     const numMonths = Object.keys(monthlyData).length;
     const monthly = numMonths > 0 ? totalFocusTime / numMonths : 0;
 
-    // --- Best Results ---
     const bestDay = Object.entries(dailyData).reduce((best, [date, total]) => total > best.total ? { date, total } : best, { date: '', total: 0 });
     const bestWeek = Object.entries(weeklyData).reduce((best, [date, total]) => total > best.total ? { date, total } : best, { date: '', total: 0 });
     const bestMonth = Object.entries(monthlyData).reduce((best, [month, total]) => total > best.total ? { month, total } : best, { month: '', total: 0 });
-
 
     return {
       currentStats: { today, thisWeek, thisMonth },
