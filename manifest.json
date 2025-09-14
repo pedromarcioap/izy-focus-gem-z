@@ -4,17 +4,7 @@
   "description": "An intelligent focus assistant designed to help users, especially those with ADHD, improve productivity through adaptive timers, gamification, and AI-powered insights. Manage tasks, stay focused, grow your virtual garden, and get personalized feedback to optimize your workflow.",
   "version": "1.0.1",
   "action": {
-    "default_popup": "index.html",
-    "default_icon": {
-      "16": "assets/icon16.png",
-      "48": "assets/icon48.png",
-      "128": "assets/icon128.png"
-    }
-  },
-  "icons": {
-    "16": "assets/icon16.png",
-    "48": "assets/icon48.png",
-    "128": "assets/icon128.png"
+    "default_popup": "index.html"
   },
   "background": {
     "service_worker": "background.js"
@@ -22,10 +12,13 @@
   "permissions": [
     "storage",
     "alarms",
-    "notifications"
+    "notifications",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": [
-    "https://generativelanguage.googleapis.com/*"
+    "https://generativelanguage.googleapis.com/*",
+    "<all_urls>"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"

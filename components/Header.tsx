@@ -1,7 +1,7 @@
 
 
 import React from 'react';
-import { HomeIcon, ChartIcon } from './icons';
+import { HomeIcon, ChartIcon, SettingsIcon, PlantIcon } from './icons';
 import { View } from '../types';
 
 interface HeaderProps {
@@ -45,6 +45,14 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView }) => {
           <NavButton view={currentView} targetView="STATS" onClick={() => setView('STATS')}>
             <ChartIcon className="w-5 h-5" />
             <span className="text-xs">Stats</span>
+          </NavButton>
+          <NavButton view={currentView} targetView="GARDEN" onClick={() => setView('GARDEN')}>
+            <PlantIcon className="w-5 h-5" />
+            <span className="text-xs">Garden</span>
+          </NavButton>
+          <NavButton view={currentView} targetView="SETTINGS" onClick={() => setView('SETTINGS')}>
+            <SettingsIcon className="w-5 h-5" />
+            <span className="text-xs">Settings</span>
           </NavButton>
         </div>
       </nav>

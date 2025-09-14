@@ -26,6 +26,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, stats, onTaskSta
                     <p>Completed: <span className="font-bold text-brand">{stats.completedSessions}</span></p>
                     <p>Interrupted: <span className="font-bold text-slate">{stats.interruptedSessions}</span></p>
                     <p>Total Focus: <span className="font-bold text-brand">{stats.totalFocusTime}</span> min</p>
+                    <p>Focus Points: <span className="font-bold text-yellow-400">{stats.focusPoints || 0}</span> ✨</p>
                 </div>
             </div>
         </div>

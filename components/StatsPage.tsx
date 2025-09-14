@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import AIFeedback from './AIFeedback';
-import WeeklyGardenView from './WeeklyGardenView';
 import { useStatsCalculations, formatDuration, formatBestDay, formatWeekRange, formatMonthName } from '../hooks/useStatsCalculations';
 import { Stats } from '../types';
 
@@ -71,7 +70,6 @@ const StatsPage: React.FC<StatsPageProps> = ({ stats }) => {
       
       <div className="border-b border-lightest-navy/20 flex justify-center space-x-2 md:space-x-4">
         <TabButton label="General" isActive={activeTab === 'GENERAL'} onClick={() => setActiveTab('GENERAL')} />
-        <TabButton label="Garden" isActive={activeTab === 'GARDEN'} onClick={() => setActiveTab('GARDEN')} />
         <TabButton label="Tasks" isActive={activeTab === 'TASKS'} onClick={() => setActiveTab('TASKS')} />
         <TabButton label="Month" isActive={activeTab === 'MONTH'} onClick={() => setActiveTab('MONTH')} />
       </div>
@@ -107,12 +105,6 @@ const StatsPage: React.FC<StatsPageProps> = ({ stats }) => {
                 </div>
 
                 <AIFeedback stats={stats} />
-            </div>
-        )}
-
-        {activeTab === 'GARDEN' && (
-            <div className="mt-4">
-                <WeeklyGardenView sessionLogs={sessionLogs} />
             </div>
         )}
 

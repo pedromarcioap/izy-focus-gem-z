@@ -5,6 +5,8 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import StatsPage from './components/StatsPage';
+import BlocklistManager from './components/BlocklistManager';
+import GardenPage from './components/GardenPage';
 import { initialTasks, initialStats } from './constants';
 import FocusTimer from './components/FocusTimer';
 import { Task, Stats, TimerState, View, SessionLog } from './types';
@@ -14,6 +16,8 @@ const App = () => {
   const [stats, setStats] = useLocalStorage<Stats>('stats', initialStats);
   const [activeTask, setActiveTask] = useLocalStorage<Task | null>('activeTask', null);
   const [timerState, setTimerState] = useLocalStorage<TimerState | null>('timerState', null);
+  const [blockedSites, setBlockedSites] = useLocalStorage<string[]>('blockedSites', []);
+  const [purchasedAssets, setPurchasedAssets] = useLocalStorage<string[]>('purchasedAssets', []);
   const [view, setView] = useState<View>('DASHBOARD');
 
   useEffect(() => {
@@ -60,6 +64,7 @@ const App = () => {
           interruptedSessions: prevStats.interruptedSessions + 1,
           totalFocusTime: prevStats.totalFocusTime + actualDurationMinutes,
           sessionLogs: [...prevStats.sessionLogs, sessionLog],
+          focusPoints: (prevStats.focusPoints || 0) + actualDurationMinutes,
       }));
     }
     
@@ -83,8 +88,17 @@ const App = () => {
             stats={stats}
             onTaskStart={handleTaskStart}
           />
-        ) : (
+        ) : view === 'STATS' ? (
           <StatsPage stats={stats} />
+        ) : view === 'GARDEN' ? (
+          <GardenPage
+            stats={stats}
+            setStats={setStats}
+            purchasedAssets={purchasedAssets}
+            setPurchasedAssets={setPurchasedAssets}
+          />
+        ) : (
+          <BlocklistManager blockedSites={blockedSites} setBlockedSites={setBlockedSites} />
         )}
       </main>
     </div>
