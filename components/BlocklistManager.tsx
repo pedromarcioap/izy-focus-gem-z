@@ -52,8 +52,8 @@ const BlocklistManager: React.FC<BlocklistManagerProps> = ({ blockedSites, setBl
         {blockedSites.length > 0 ? (
           blockedSites.map(site => (
             <div key={site} className="bg-navy p-3 rounded-md flex items-center justify-between">
-              <p className="font-mono text-light-slate">{site}</p>
-              <button onClick={() => handleRemoveSite(site)} className="p-1 text-slate hover:text-red-500 transition-colors">
+              <p className="font-mono text-light-slate truncate">{site}</p>
+              <button onClick={() => handleRemoveSite(site)} className="p-1 text-slate hover:text-red-500 transition-colors flex-shrink-0">
                 <DeleteIcon className="w-5 h-5" />
               </button>
             </div>

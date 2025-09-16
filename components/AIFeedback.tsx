@@ -44,7 +44,7 @@ const AIFeedback: React.FC<AIFeedbackProps> = ({ stats }) => {
       <h3 className="text-xl font-bold text-lightest-slate mb-4">AI Productivity Coach</h3>
       {feedback && !isLoading && (
         <div
-            className="prose prose-slate text-light-slate max-w-none"
+            className="prose prose-slate text-light-slate max-w-none break-words"
             dangerouslySetInnerHTML={{ __html: `<ul>${formattedFeedback}</ul>` }}
         />
       )}

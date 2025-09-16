@@ -73,9 +73,9 @@ const App = () => {
   }, [activeTask, timerState, setStats, setActiveTask, setTimerState]);
 
   return (
-    <div className="w-[400px] h-[550px] overflow-y-auto bg-navy text-slate font-sans flex flex-col">
+    <div className="w-full h-full bg-navy text-slate font-sans flex flex-col">
       <Header currentView={view} setView={setView} />
-      <main className="flex-grow p-4">
+      <main className="flex-grow p-4 min-h-0 overflow-y-auto">
         {activeTask ? (
            <FocusTimer
             task={activeTask}

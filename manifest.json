@@ -3,18 +3,24 @@
   "name": "Izy Focus Gem Z",
   "description": "An intelligent focus assistant designed to help users, especially those with ADHD, improve productivity through adaptive timers, gamification, and AI-powered insights. Manage tasks, stay focused, grow your virtual garden, and get personalized feedback to optimize your workflow.",
   "version": "1.0.1",
+  "side_panel": {
+    "default_path": "index.html"
+  },
   "action": {
-    "default_popup": "index.html"
+    "title": "Izy Focus Gem Z",
+    "default_title": "Izy Focus Gem Z"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "permissions": [
     "storage",
     "alarms",
     "notifications",
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess"
+    "declarativeNetRequestWithHostAccess",
+    "sidePanel"
   ],
   "host_permissions": [
     "https://generativelanguage.googleapis.com/*",

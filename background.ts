@@ -128,3 +128,8 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
         updateBlockingRules();
     }
 });
+
+// Open the side panel on the action button click.
+chrome.action.onClicked.addListener((tab) => {
+  chrome.sidePanel.open({ windowId: tab.windowId });
+});
