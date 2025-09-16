@@ -79,7 +79,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ stats }) => {
             <div className="space-y-6">
                 <div className="bg-light-navy p-4 md:p-6 rounded-lg">
                     <h3 className="text-lg font-bold text-light-slate mb-4">Current Stats</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         <StatCard title="Today" value={formatDuration(currentStats.today)} />
                         <StatCard title="This week" value={formatDuration(currentStats.thisWeek)} />
                         <StatCard title="This month" value={formatDuration(currentStats.thisMonth)} />
@@ -88,7 +88,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ stats }) => {
 
                 <div className="bg-light-navy p-4 md:p-6 rounded-lg">
                     <h3 className="text-lg font-bold text-light-slate mb-4">Average Results</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         <StatCard title="Daily" value={formatDuration(averageResults.daily)} />
                         <StatCard title="Weekly" value={formatDuration(averageResults.weekly)} />
                         <StatCard title="Monthly" value={formatDuration(averageResults.monthly)} />
@@ -97,7 +97,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ stats }) => {
                 
                 <div className="bg-light-navy p-4 md:p-6 rounded-lg">
                     <h3 className="text-lg font-bold text-light-slate mb-4">Best Results</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         <StatCard title="Day" value={formatDuration(bestResults.day.total)} subtext={formatBestDay(bestResults.day.date)} />
                         <StatCard title="Week" value={formatDuration(bestResults.week.total)} subtext={formatWeekRange(bestResults.week.date)} />
                         <StatCard title="Month" value={formatDuration(bestResults.month.total)} subtext={formatMonthName(bestResults.month.month)} />

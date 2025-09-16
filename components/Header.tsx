@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView }) => {
         <h1 className="text-lg font-bold text-lightest-slate tracking-tighter">
           Izy <span className="text-brand">Focus</span>
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end flex-wrap gap-2">
           <NavButton view={currentView} targetView="DASHBOARD" onClick={() => setView('DASHBOARD')}>
             <HomeIcon className="w-5 h-5" />
             <span className="text-xs">Dashboard</span>

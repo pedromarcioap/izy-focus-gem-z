@@ -49,8 +49,8 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, setTasks, onTaskStart }) => 
       </div>
       <div className="space-y-3">
         {tasks.length > 0 ? tasks.map(task => (
-          <div key={task.id} className="bg-navy p-4 rounded-md flex items-center justify-between transition-all hover:shadow-lg hover:shadow-brand/10">
-            <div>
+          <div key={task.id} className="bg-navy p-4 rounded-md flex items-center justify-between flex-wrap gap-2">
+            <div className="flex-grow">
               <p className="font-bold text-light-slate">{task.name}</p>
               <p className="text-sm text-slate">{task.duration} minutes</p>
             </div>
