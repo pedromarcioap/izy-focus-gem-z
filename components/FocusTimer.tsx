@@ -1,12 +1,16 @@
+import React, { useState, useEffect } from 'react';
+// Removed import { useLocalStorage } from '../hooks/useLocalStorage';
+import { StopIcon } from './icons';
+import { Task, TimerState } from '../types';
 
+interface FocusTimerProps {
+  task: Task;
+  onInterrupt: (timeElapsed: number) => void;
+  timerState: TimerState | null; // timerState is now a prop
+}
 
-// @ts-ignore
-import React, { useState, useEffect } from '../react.js';
-import { useLocalStorage } from '../hooks/useLocalStorage.ts';
-import { StopIcon } from './icons.tsx';
-
-const FocusTimer = ({ task, onInterrupt }) => {
-  const [timerState] = useLocalStorage('timerState', null);
+const FocusTimer: React.FC<FocusTimerProps> = ({ task, onInterrupt, timerState }) => {
+  // Removed const [timerState] = useLocalStorage<TimerState | null>('timerState', null);
   const [timeLeft, setTimeLeft] = useState(task.duration * 60);
 
   useEffect(() => {
@@ -23,7 +27,7 @@ const FocusTimer = ({ task, onInterrupt }) => {
     return () => clearInterval(intervalId);
   }, [timerState]);
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
@@ -38,44 +42,44 @@ const FocusTimer = ({ task, onInterrupt }) => {
   }
 
   return (
-    React.createElement("div", { className: "h-full w-full bg-navy z-30 flex flex-col items-center justify-around p-4 text-center" },
-      React.createElement("div", null,
-        React.createElement("p", { className: "text-lg text-slate mb-1" }, "Focusing on:"),
-        React.createElement("h2", { className: "text-2xl font-bold text-lightest-slate" }, task.name)
-      ),
+    <div className="focus-timer-container">
+      <div>
+        <p className="focus-timer-label">Focusing on:</p>
+        <h2 className="focus-timer-task-name">{task.name}</h2>
+      </div>
 
-      React.createElement("div", { className: "relative w-60 h-60 flex items-center justify-center" },
-        React.createElement("svg", { className: "w-full h-full", viewBox: "0 0 100 100" },
-          React.createElement("circle", { className: "text-light-navy", strokeWidth: "7", stroke: "currentColor", fill: "transparent", r: "45", cx: "50", cy: "50" }),
-          React.createElement("circle", {
-            className: "text-brand",
-            strokeWidth: "7",
-            strokeDasharray: "283",
-            strokeDashoffset: 283 - (progress / 100) * 283,
-            strokeLinecap: "round",
-            stroke: "currentColor",
-            fill: "transparent",
-            r: "45",
-            cx: "50",
-            cy: "50",
-            style: { transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 0.5s linear' }
-          })
-        ),
-        React.createElement("div", { className: "absolute flex flex-col items-center" },
-          React.createElement("p", { className: "text-5xl font-mono font-bold text-lightest-slate" }, formatTime(timeLeft))
-        )
-      ),
+      <div className="focus-timer-circle-container">
+        <svg className="focus-timer-svg" viewBox="0 0 100 100">
+          <circle className="focus-timer-circle-bg" strokeWidth="7" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+          <circle
+            className="focus-timer-circle-progress"
+            strokeWidth="7"
+            strokeDasharray="283"
+            strokeDashoffset={283 - (progress / 100) * 283}
+            strokeLinecap="round"
+            stroke="currentColor"
+            fill="transparent"
+            r="45"
+            cx="50"
+            cy="50"
+            style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 0.5s linear' }}
+          />
+        </svg>
+        <div className="focus-timer-time-display">
+          <p className="focus-timer-time">{formatTime(timeLeft)}</p>
+        </div>
+      </div>
       
-      React.createElement("div", null,
-        React.createElement("button", {
-          onClick: handleInterrupt,
-          className: "flex items-center gap-3 px-6 py-2.5 bg-lightest-navy rounded-lg text-light-slate hover:bg-red-500/20 hover:text-red-400 transition-all duration-300"
-        },
-          React.createElement(StopIcon, { className: "w-6 h-6" }),
-          React.createElement("span", { className: "font-bold text-sm" }, "Interrupt")
-        )
-      )
-    )
+      <div>
+        <button
+          onClick={handleInterrupt}
+          className="button-primary focus-timer-interrupt-button-override"
+        >
+          <StopIcon className="focus-timer-icon" />
+          <span className="focus-timer-button-text">Interrupt</span>
+        </button>
+      </div>
+    </div>
   );
 };
 

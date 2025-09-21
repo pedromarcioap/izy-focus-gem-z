@@ -1,43 +1,71 @@
+import React, { useState, useCallback, useEffect } from 'react';
+// Removed import { useLocalStorage } from './hooks/useLocalStorage';
+import Header from './components/Header';
+import Dashboard from './components/Dashboard';
+import StatsPage from './components/StatsPage';
+import BlocklistManager from './components/BlocklistManager';
+import GardenPage from './components/GardenPage';
+import AISettings from './components/AISettings';
+import { initialTasks, initialStats } from './constants';
+import FocusTimer from './components/FocusTimer';
+import { Task, Stats, TimerState, View, SessionLog } from './types';
 
-
-declare const chrome: any;
-
-// @ts-ignore
-import React, { useState, useCallback, useEffect } from './react.js';
-import { useLocalStorage } from './hooks/useLocalStorage.ts';
-import Header from './components/Header.tsx';
-import Dashboard from './components/Dashboard.tsx';
-import StatsPage from './components/StatsPage.tsx';
-import { initialTasks, initialStats } from './constants.ts';
-import FocusTimer from './components/FocusTimer.tsx';
+// Define initial values for all storage keys
+const initialStorageValues = {
+  tasks: initialTasks,
+  stats: initialStats,
+  activeTask: null,
+  timerState: null,
+  blockedSites: [],
+  openRouterApiKey: '',
+  openRouterModel: 'openai/gpt-3.5-turbo',
+};
 
 const App = () => {
-  const [tasks, setTasks] = useLocalStorage('tasks', initialTasks);
-  const [stats, setStats] = useLocalStorage('stats', initialStats);
-  const [activeTask, setActiveTask] = useLocalStorage('activeTask', null);
-  const [timerState, setTimerState] = useLocalStorage('timerState', null);
-  const [view, setView] = useState('DASHBOARD');
+  // Use a single state for all storage-managed values
+  const [storageValues, setStorageValues] = useState(initialStorageValues);
+  const [isStorageLoaded, setIsStorageLoaded] = useState(false);
+  const [view, setView] = useState<View>('DASHBOARD');
 
+  // Load all values from chrome.storage.local once
   useEffect(() => {
-    // When the popup opens, if the timer has ended (e.g. handled by background script),
-    // but the view is still on the timer, switch back to dashboard.
-    if (!activeTask && view === 'DASHBOARD') {
-      // This is the correct state, do nothing.
-    }
-  }, [activeTask, view]);
+    console.log('App: Loading all storage values...');
+    chrome.storage.local.get(Object.keys(initialStorageValues), (result) => {
+      console.log('App: All storage values loaded:', result);
+      setStorageValues(prev => ({ ...prev, ...result }));
+      setIsStorageLoaded(true);
+    });
+  }, []);
 
-  const handleTaskStart = (task) => {
-    const durationInMinutes = task.duration;
-    const durationInSeconds = durationInMinutes * 60;
+  // Function to update a specific storage key
+  const setStorageValue = useCallback((key: keyof typeof initialStorageValues, value: any) => {
+    setStorageValues(prev => {
+      const newValues = { ...prev, [key]: value };
+      chrome.storage.local.set({ [key]: value }, () => {
+        console.log(`App: Stored ${key} with value:`, value);
+      });
+      return newValues;
+    });
+  }, []);
+
+  // Destructure values for easier use
+  const { tasks, stats, activeTask, timerState, blockedSites, openRouterApiKey, openRouterModel } = storageValues;
+
+  // ... rest of the App component logic ...
+
+  // handleTaskStart
+  const handleTaskStart = (task: Task) => {
+    const durationInSeconds = task.duration * 60;
     const targetEndTime = Date.now() + durationInSeconds * 1000;
 
     chrome.alarms.create('focusTimer', { when: targetEndTime });
     
-    setActiveTask(task);
-    setTimerState({ targetEndTime, taskDuration: durationInSeconds });
+    setStorageValue('activeTask', task); // Use new setter
+    setStorageValue('timerState', { targetEndTime, taskDuration: durationInSeconds }); // Use new setter
   };
 
-  const handleSessionEnd = useCallback((status, timeElapsedInSeconds) => {
+  // handleSessionEnd
+  const handleSessionEnd = useCallback((status: 'interrupted', timeElapsedInSeconds?: number) => {
     if (!activeTask) return;
 
     chrome.alarms.clear('focusTimer');
@@ -47,7 +75,7 @@ const App = () => {
     const actualDurationMinutes = Math.round(timeElapsed / 60);
 
     if (status === 'interrupted' && actualDurationMinutes > 0) {
-      const sessionLog = {
+      const sessionLog: SessionLog = {
         id: `session-${Date.now()}`,
         taskId: activeTask.id,
         taskName: activeTask.name,
@@ -58,39 +86,68 @@ const App = () => {
         status,
       };
       
-      setStats(prevStats => ({
-          ...prevStats,
-          interruptedSessions: prevStats.interruptedSessions + 1,
-          totalFocusTime: prevStats.totalFocusTime + actualDurationMinutes,
-          sessionLogs: [...prevStats.sessionLogs, sessionLog],
-      }));
+      setStorageValue('stats', { // Use new setter
+          ...stats,
+          interruptedSessions: stats.interruptedSessions + 1,
+          totalFocusTime: stats.totalFocusTime + actualDurationMinutes,
+          sessionLogs: [...stats.sessionLogs, sessionLog],
+      });
     }
     
-    setActiveTask(null);
-    setTimerState(null);
-  }, [activeTask, timerState, setStats, setActiveTask, setTimerState]);
+    setStorageValue('activeTask', null); // Use new setter
+    setStorageValue('timerState', null); // Use new setter
+  }, [activeTask, timerState, stats, setStorageValue]); // Add setStorageValue to dependencies
+
+  // Render only after storage is loaded
+  if (!isStorageLoaded) {
+    return <div className="app-loading">Loading extension data...</div>; // Simple loading state
+  }
 
   return (
-    React.createElement("div", { className: "w-[400px] h-[550px] overflow-y-auto bg-navy text-slate font-sans flex flex-col" },
-      React.createElement(Header, { currentView: view, setView: setView }),
-      React.createElement("main", { className: "flex-grow p-4" },
-        activeTask ? (
-           React.createElement(FocusTimer, { 
-            task: activeTask,
-            onInterrupt: (timeElapsed) => handleSessionEnd('interrupted', timeElapsed)
-           })
+    <div className="app-container">
+      <Header currentView={view} setView={setView} />
+      <main className="app-main">
+        {activeTask ? (
+           <FocusTimer
+            task={activeTask}
+            onInterrupt={(timeElapsed) => handleSessionEnd('interrupted', timeElapsed)}
+            timerState={timerState} // Pass timerState as prop
+           />
         ) : view === 'DASHBOARD' ? (
-          React.createElement(Dashboard, {
-            tasks: tasks,
-            setTasks: setTasks,
-            stats: stats,
-            onTaskStart: handleTaskStart
-          })
-        ) : (
-          React.createElement(StatsPage, { stats: stats })
-        )
-      )
-    )
+          <Dashboard
+            tasks={tasks}
+            setTasks={(newTasks) => setStorageValue('tasks', newTasks)} // Use new setter
+            stats={stats}
+            onTaskStart={handleTaskStart}
+          />
+        ) : view === 'STATS' ? (
+          <StatsPage stats={stats} />
+        ) : view === 'GARDEN' ? (
+          <GardenPage
+            stats={stats}
+          />
+        ) : view === 'AI_SETTINGS' ? (
+          <AISettings
+            openRouterApiKey={openRouterApiKey}
+            setOpenRouterApiKey={(key) => setStorageValue('openRouterApiKey', key)} // Use new setter
+            openRouterModel={openRouterModel}
+            setOpenRouterModel={(model) => setStorageValue('openRouterModel', model)} // Use new setter
+          />
+        ) : view === 'SETTINGS' ? (
+          (() => {
+            try {
+              return <BlocklistManager
+                blockedSites={blockedSites}
+                setBlockedSites={(newSites) => setStorageValue('blockedSites', newSites)} // Use new setter
+              />;
+            } catch (err) {
+              console.error('Erro ao renderizar Settings (BlocklistManager):', err);
+              return <div style={{color: 'red', padding: 16}}>Erro ao carregar Settings. Veja o console para detalhes.</div>;
+            }
+          })()
+        ) : null}
+      </main>
+    </div>
   );
 };
 
