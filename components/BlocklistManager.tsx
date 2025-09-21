@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DeleteIcon } from './icons';
+import { EditIcon, DeleteIcon } from './icons';
 
 interface BlocklistManagerProps {
   blockedSites: string[];

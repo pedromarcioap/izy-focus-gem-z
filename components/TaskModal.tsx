@@ -1,7 +1,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+
 import { Task } from '../types';
 
 interface TaskModalProps {
@@ -37,10 +37,11 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task }) 
     onClose();
   };
 
-  // Render modal as a portal directly in the body
-  return createPortal(
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-      <div className="relative bg-light-navy p-8 rounded-2xl shadow-xl w-full max-w-md m-4 border border-lightest-navy/30 animate-fade-in">
+  // Modal adaptado para sidebar: ocupa todo o container pai, centralizado, responsivo
+  return (
+    <div style={{position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', zIndex: 50, background: 'rgba(0,0,0,0.7)'}} className="flex items-center justify-center">
+      <div className="relative bg-light-navy p-6 rounded-2xl shadow-xl w-full max-w-md mx-2 my-4 border border-lightest-navy/30 animate-fade-in"
+        style={{maxWidth: '95vw', maxHeight: '95vh', overflowY: 'auto'}}>
         <button
           type="button"
           onClick={onClose}
@@ -80,8 +81,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task }) 
           </div>
         </form>
       </div>
-    </div>,
-    document.body
+    </div>
   );
 };
 

@@ -134,10 +134,17 @@ const App = () => {
             setOpenRouterModel={(model) => setStorageValue('openRouterModel', model)} // Use new setter
           />
         ) : view === 'SETTINGS' ? (
-          <BlocklistManager
-            blockedSites={blockedSites}
-            setBlockedSites={(newSites) => setStorageValue('blockedSites', newSites)} // Use new setter
-          />
+          (() => {
+            try {
+              return <BlocklistManager
+                blockedSites={blockedSites}
+                setBlockedSites={(newSites) => setStorageValue('blockedSites', newSites)} // Use new setter
+              />;
+            } catch (err) {
+              console.error('Erro ao renderizar Settings (BlocklistManager):', err);
+              return <div style={{color: 'red', padding: 16}}>Erro ao carregar Settings. Veja o console para detalhes.</div>;
+            }
+          })()
         ) : null}
       </main>
     </div>
