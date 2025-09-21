@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { PlayIcon, EditIcon, DeleteIcon, AddIcon } from './icons';
 import TaskModal from './TaskModal';
@@ -36,34 +34,38 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, setTasks, onTaskStart }) => 
   };
 
   return (
-    <div className="bg-light-navy p-6 rounded-lg border border-lightest-navy/20">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-lightest-slate">Focus Tasks</h2>
+    <div className="task-list-container"> {/* Custom class */}
+      <div className="task-list-header"> {/* Custom class */}
+        <h2 className="task-list-title">Focus Tasks</h2> {/* Custom class */}
         <button
           onClick={() => { setEditingTask(null); setIsModalOpen(true); }}
-          className="flex items-center gap-2 bg-brand text-navy px-3 py-2 rounded-md font-bold hover:bg-opacity-80 transition-all"
+          className="button-primary task-list-new-button" /* Use button-primary and override */
         >
-          <AddIcon className="w-5 h-5" />
+          <AddIcon className="task-list-icon" /> {/* Custom class */}
           <span>New Task</span>
         </button>
       </div>
-      <div className="space-y-3">
+      <div className="task-list-items-container"> {/* Custom class */}
         {tasks.length > 0 ? tasks.map(task => (
-          <div key={task.id} className="bg-navy p-4 rounded-md flex items-center justify-between flex-wrap gap-2">
-            <div className="flex-grow">
-              <p className="font-bold text-light-slate">{task.name}</p>
-              <p className="text-sm text-slate">{task.duration} minutes</p>
+          <div key={task.id} className="task-item-card"> {/* Custom class */}
+            <div className="task-item-details"> {/* Custom class */}
+              <p className="task-item-name">{task.name}</p> {/* Custom class */}
+              <p className="task-item-duration">{task.duration} minutes</p> {/* Custom class */}
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => handleEdit(task)} className="p-2 text-slate hover:text-brand transition-colors"><EditIcon className="w-5 h-5" /></button>
-              <button onClick={() => handleDelete(task.id)} className="p-2 text-slate hover:text-red-500 transition-colors"><DeleteIcon className="w-5 h-5" /></button>
-              <button onClick={() => onTaskStart(task)} className="p-2 rounded-full bg-brand/10 text-brand hover:bg-brand/20 transition-colors">
-                <PlayIcon className="w-6 h-6" />
+            <div className="task-item-actions"> {/* Custom class */}
+              <button onClick={() => handleEdit(task)} className="task-action-button"> {/* Custom class */}
+                <EditIcon className="task-action-icon" /> {/* Custom class */}
+              </button>
+              <button onClick={() => handleDelete(task.id)} className="task-action-button task-action-button-delete"> {/* Custom class */}
+                <DeleteIcon className="task-action-icon" /> {/* Custom class */}
+              </button>
+              <button onClick={() => onTaskStart(task)} className="task-action-button task-action-button-play"> {/* Custom class */}
+                <PlayIcon className="task-action-icon-play" /> {/* Custom class */}
               </button>
             </div>
           </div>
         )) : (
-            <p className="text-slate text-center py-6">No tasks yet. Create one to get started!</p>
+            <p className="task-list-empty-message" /* Custom class */>No tasks yet. Create one to get started!</p>
         )}
       </div>
       <TaskModal

@@ -20,7 +20,6 @@ export interface Stats {
   interruptedSessions: number;
   totalFocusTime: number; // in minutes
   sessionLogs: SessionLog[];
-  focusPoints: number;
 }
 
 export interface TimerState {
@@ -28,4 +27,4 @@ export interface TimerState {
   taskDuration: number; // in seconds
 }
 
-export type View = 'DASHBOARD' | 'STATS' | 'GARDEN' | 'SETTINGS';
+export type View = 'DASHBOARD' | 'STATS' | 'GARDEN' | 'SETTINGS' | 'AI_SETTINGS'; // Added AI_SETTINGS

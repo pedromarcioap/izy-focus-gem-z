@@ -1,17 +1,16 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+// Removed import { useLocalStorage } from '../hooks/useLocalStorage';
 import { StopIcon } from './icons';
 import { Task, TimerState } from '../types';
 
 interface FocusTimerProps {
   task: Task;
   onInterrupt: (timeElapsed: number) => void;
+  timerState: TimerState | null; // timerState is now a prop
 }
 
-const FocusTimer: React.FC<FocusTimerProps> = ({ task, onInterrupt }) => {
-  const [timerState] = useLocalStorage<TimerState | null>('timerState', null);
+const FocusTimer: React.FC<FocusTimerProps> = ({ task, onInterrupt, timerState }) => {
+  // Removed const [timerState] = useLocalStorage<TimerState | null>('timerState', null);
   const [timeLeft, setTimeLeft] = useState(task.duration * 60);
 
   useEffect(() => {
@@ -43,17 +42,17 @@ const FocusTimer: React.FC<FocusTimerProps> = ({ task, onInterrupt }) => {
   }
 
   return (
-    <div className="h-full w-full bg-navy z-30 flex flex-col items-center justify-around p-4 text-center">
+    <div className="focus-timer-container">
       <div>
-        <p className="text-lg text-slate mb-1">Focusing on:</p>
-        <h2 className="text-2xl font-bold text-lightest-slate">{task.name}</h2>
+        <p className="focus-timer-label">Focusing on:</p>
+        <h2 className="focus-timer-task-name">{task.name}</h2>
       </div>
 
-      <div className="relative w-60 h-60 flex items-center justify-center">
-        <svg className="w-full h-full" viewBox="0 0 100 100">
-          <circle className="text-light-navy" strokeWidth="7" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+      <div className="focus-timer-circle-container">
+        <svg className="focus-timer-svg" viewBox="0 0 100 100">
+          <circle className="focus-timer-circle-bg" strokeWidth="7" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
           <circle
-            className="text-brand"
+            className="focus-timer-circle-progress"
             strokeWidth="7"
             strokeDasharray="283"
             strokeDashoffset={283 - (progress / 100) * 283}
@@ -66,18 +65,18 @@ const FocusTimer: React.FC<FocusTimerProps> = ({ task, onInterrupt }) => {
             style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 0.5s linear' }}
           />
         </svg>
-        <div className="absolute flex flex-col items-center">
-          <p className="text-5xl font-mono font-bold text-lightest-slate">{formatTime(timeLeft)}</p>
+        <div className="focus-timer-time-display">
+          <p className="focus-timer-time">{formatTime(timeLeft)}</p>
         </div>
       </div>
       
       <div>
         <button
           onClick={handleInterrupt}
-          className="flex items-center gap-3 px-6 py-2.5 bg-lightest-navy rounded-lg text-light-slate hover:bg-red-500/20 hover:text-red-400 transition-all duration-300"
+          className="button-primary focus-timer-interrupt-button-override"
         >
-          <StopIcon className="w-6 h-6" />
-          <span className="font-bold text-sm">Interrupt</span>
+          <StopIcon className="focus-timer-icon" />
+          <span className="focus-timer-button-text">Interrupt</span>
         </button>
       </div>
     </div>

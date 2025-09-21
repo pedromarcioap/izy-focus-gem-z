@@ -1,35 +1,21 @@
 import React from 'react';
 import GardenView from './GardenView';
-import GardenStore from './GardenStore';
 import { Stats } from '../types';
 
 interface GardenPageProps {
   stats: Stats;
-  setStats: (stats: Stats) => void;
-  purchasedAssets: string[];
-  setPurchasedAssets: (assets: string[]) => void;
 }
 
-const GardenPage: React.FC<GardenPageProps> = ({ stats, setStats, purchasedAssets, setPurchasedAssets }) => {
-
-  const handlePurchase = (itemId: string, cost: number) => {
-    if ((stats.focusPoints || 0) >= cost && !purchasedAssets.includes(itemId)) {
-      setStats({
-        ...stats,
-        focusPoints: (stats.focusPoints || 0) - cost,
-      });
-      setPurchasedAssets([...purchasedAssets, itemId]);
-    }
-  };
-
+const GardenPage: React.FC<GardenPageProps> = ({ stats }) => {
   return (
-    <div className="space-y-6">
-      <GardenView purchasedAssets={purchasedAssets} />
-      <GardenStore
-        stats={stats}
-        purchasedAssets={purchasedAssets}
-        onPurchase={handlePurchase}
-      />
+    <div className="dashboard-container">
+        <div className="dashboard-header-card">
+            <h2 className="dashboard-header-title">Your Focus Garden</h2>
+            <p className="dashboard-header-subtitle">Visualize your focus progress as a flourishing garden.</p>
+        </div>
+        <div className="dashboard-content-area">
+            <GardenView totalFocusTime={stats.totalFocusTime} sessionLogs={stats.sessionLogs} />
+        </div>
     </div>
   );
 };

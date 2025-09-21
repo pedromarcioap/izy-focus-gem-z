@@ -11,13 +11,13 @@ export const initialStats: Stats = {
   interruptedSessions: 0,
   totalFocusTime: 0,
   sessionLogs: [],
-  focusPoints: 0,
 };
 
-export const GARDEN_STORE_ITEMS = [
-    { id: 'tree1', name: 'Sturdy Oak', cost: 50 },
-    { id: 'tree2', name: 'Tall Pine', cost: 75 },
-    { id: 'flowers', name: 'Flower Patch', cost: 30 },
-    { id: 'rock', name: 'Mossy Rock', cost: 20 },
-    { id: 'pond', name: 'Serene Pond', cost: 150 },
+export const DEFAULT_BLOCKED_SITES = [
+  'facebook.com',
+  'twitter.com',
+  'x.com',
+  'instagram.com',
+  'youtube.com',
+  'reddit.com',
 ];

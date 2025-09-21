@@ -1,6 +1,7 @@
 
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Task } from '../types';
 
 interface TaskModalProps {
@@ -36,9 +37,16 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task }) 
     onClose();
   };
 
-  return (
+  // Render modal as a portal directly in the body
+  return createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-      <div className="bg-light-navy p-8 rounded-lg w-full max-w-md m-4 border border-lightest-navy/30">
+      <div className="relative bg-light-navy p-8 rounded-2xl shadow-xl w-full max-w-md m-4 border border-lightest-navy/30 animate-fade-in">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate hover:text-error text-2xl font-bold focus:outline-none"
+          aria-label="Fechar modal"
+        >×</button>
         <h2 className="text-2xl font-bold mb-6 text-lightest-slate">{task ? 'Edit Task' : 'Create New Task'}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -49,7 +57,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task }) 
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full bg-navy border border-lightest-navy rounded-md p-2 text-lightest-slate focus:ring-2 focus:ring-brand focus:outline-none"
+              className="w-full bg-navy border border-brand rounded-full p-3 text-lightest-slate focus:ring-2 focus:ring-brand focus:outline-none shadow-sm text-base"
               placeholder="e.g., Design Sprint"
             />
           </div>
@@ -63,16 +71,17 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task }) 
               required
               min="1"
               max="180"
-              className="w-full bg-navy border border-lightest-navy rounded-md p-2 text-lightest-slate focus:ring-2 focus:ring-brand focus:outline-none"
+              className="w-full bg-navy border border-brand rounded-full p-3 text-lightest-slate focus:ring-2 focus:ring-brand focus:outline-none shadow-sm text-base"
             />
           </div>
           <div className="flex justify-end gap-4 pt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-md text-slate hover:bg-lightest-navy transition-colors">Cancel</button>
-            <button type="submit" className="px-4 py-2 rounded-md bg-brand text-navy font-bold hover:bg-opacity-80 transition-colors">Save Task</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-slate hover:bg-lightest-navy transition-colors">Cancelar</button>
+            <button type="submit" className="px-4 py-2 rounded-full bg-brand text-navy font-bold hover:bg-opacity-80 transition-colors shadow">Salvar</button>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

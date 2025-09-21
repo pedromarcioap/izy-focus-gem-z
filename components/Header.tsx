@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { HomeIcon, ChartIcon, SettingsIcon, PlantIcon } from './icons';
 import { View } from '../types';
@@ -19,11 +17,7 @@ interface NavButtonProps {
 const NavButton: React.FC<NavButtonProps> = ({ view, targetView, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 ${
-      view === targetView
-        ? 'bg-brand text-navy'
-        : 'text-lightest-slate hover:bg-light-navy hover:text-brand'
-    }`}
+    className={`nav-button ${view === targetView ? 'nav-button-active' : ''}`}
     aria-current={view === targetView ? 'page' : undefined}
   >
     {children}
@@ -32,27 +26,31 @@ const NavButton: React.FC<NavButtonProps> = ({ view, targetView, onClick, childr
 
 const Header: React.FC<HeaderProps> = ({ currentView, setView }) => {
   return (
-    <header className="bg-light-navy/80 backdrop-blur-sm sticky top-0 z-20 flex-shrink-0">
-      <nav className="flex justify-between items-center p-3">
-        <h1 className="text-lg font-bold text-lightest-slate tracking-tighter">
-          Izy <span className="text-brand">Focus</span>
+    <header className="app-header">
+      <nav className="header-nav">
+        <h1 className="header-title">
+          Izy <span className="header-title-brand">Focus</span>
         </h1>
-        <div className="flex items-center justify-end flex-wrap gap-2">
+        <div className="nav-buttons-container">
           <NavButton view={currentView} targetView="DASHBOARD" onClick={() => setView('DASHBOARD')}>
-            <HomeIcon className="w-5 h-5" />
-            <span className="text-xs">Dashboard</span>
+            <HomeIcon className="nav-icon" />
+            <span className="nav-text">Dashboard</span>
           </NavButton>
           <NavButton view={currentView} targetView="STATS" onClick={() => setView('STATS')}>
-            <ChartIcon className="w-5 h-5" />
-            <span className="text-xs">Stats</span>
+            <ChartIcon className="nav-icon" />
+            <span className="nav-text">Stats</span>
           </NavButton>
           <NavButton view={currentView} targetView="GARDEN" onClick={() => setView('GARDEN')}>
-            <PlantIcon className="w-5 h-5" />
-            <span className="text-xs">Garden</span>
+            <PlantIcon className="nav-icon" />
+            <span className="nav-text">Garden</span>
+          </NavButton>
+          <NavButton view={currentView} targetView="AI_SETTINGS" onClick={() => setView('AI_SETTINGS')}>
+            <SettingsIcon className="nav-icon" />
+            <span className="nav-text">AI Settings</span>
           </NavButton>
           <NavButton view={currentView} targetView="SETTINGS" onClick={() => setView('SETTINGS')}>
-            <SettingsIcon className="w-5 h-5" />
-            <span className="text-xs">Settings</span>
+            <SettingsIcon className="nav-icon" />
+            <span className="nav-text">Settings</span>
           </NavButton>
         </div>
       </nav>

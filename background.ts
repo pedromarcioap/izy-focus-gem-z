@@ -1,7 +1,5 @@
-import { initialTasks, initialStats } from './constants';
+import { initialTasks, initialStats, DEFAULT_BLOCKED_SITES } from './constants';
 import { Task, Stats, TimerState, SessionLog } from './types';
-
-const BLOCKER_RULE_ID = 1;
 
 interface StoredData {
     activeTask?: Task | null;
@@ -18,45 +16,27 @@ const getStorageData = (keys: string[]): Promise<StoredData> => {
   });
 };
 
-const updateBlockingRules = async () => {
+// New blocking logic using chrome.tabs.onUpdated
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (changeInfo.status === "loading" && tab.url) {
     const { activeTask, blockedSites } = await getStorageData(['activeTask', 'blockedSites']);
+    const url = new URL(tab.url);
 
-    if (!activeTask || !blockedSites || blockedSites.length === 0) {
-        // No active session or no sites to block, so remove any existing rules.
-        chrome.declarativeNetRequest.updateDynamicRules({
-            removeRuleIds: [BLOCKER_RULE_ID]
-        }, () => {
-            if (chrome.runtime.lastError) {
-                console.error('Error clearing blocking rules:', chrome.runtime.lastError);
-            } else {
-                console.log('Blocking rules cleared.');
-            }
-        });
-        return;
+    console.log('onUpdated fired for:', tab.url);
+    console.log('Inside onUpdated - activeTask:', activeTask);
+    console.log('Inside onUpdated - blockedSites:', blockedSites);
+    console.log('Inside onUpdated - hostname:', url.hostname);
+
+    if (activeTask && blockedSites && blockedSites.length > 0) {
+      const isBlocked = blockedSites.some(blockedDomain => url.hostname.includes(blockedDomain));
+      console.log('Is blocked:', isBlocked);
+      if (isBlocked) {
+        console.log(`Redirecting: ${tab.url}`);
+        chrome.tabs.update(tabId, { url: chrome.runtime.getURL("blocked.html") });
+      }
     }
-
-    // There is an active session and a blocklist, so create the rules.
-    const newRule: chrome.declarativeNetRequest.Rule = {
-        id: BLOCKER_RULE_ID,
-        priority: 1,
-        action: { type: 'block' as chrome.declarativeNetRequest.RuleActionType.BLOCK },
-        condition: {
-            resourceTypes: ['main_frame' as chrome.declarativeNetRequest.ResourceType.MAIN_FRAME],
-            domains: blockedSites,
-        }
-    };
-
-    chrome.declarativeNetRequest.updateDynamicRules({
-        removeRuleIds: [BLOCKER_RULE_ID], // Remove old rule first
-        addRules: [newRule]
-    }, () => {
-        if (chrome.runtime.lastError) {
-            console.error('Error updating blocking rules:', chrome.runtime.lastError);
-        } else {
-            console.log('Blocking rules updated for sites:', blockedSites);
-        }
-    });
-};
+  }
+});
 
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -72,7 +52,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     const actualDurationMinutes = Math.round(timeElapsedInSeconds / 60);
 
     const sessionLog: SessionLog = {
-      id: `session-${Date.now()}`,
+      id: `session-${timerState.targetEndTime}`,
       taskId: activeTask.id,
       taskName: activeTask.name,
       duration: activeTask.duration,
@@ -87,7 +67,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         completedSessions: (stats.completedSessions || 0) + 1,
         totalFocusTime: (stats.totalFocusTime || 0) + actualDurationMinutes,
         sessionLogs: [...(stats.sessionLogs || []), sessionLog],
-        focusPoints: (stats.focusPoints || 0) + actualDurationMinutes,
     };
 
     chrome.storage.local.set({
@@ -95,8 +74,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         activeTask: null,
         timerState: null,
     });
-
-    // No need to call updateBlockingRules() here, as the storage change listener will handle it.
 
     chrome.notifications.create({
       type: 'basic',
@@ -115,21 +92,11 @@ chrome.runtime.onInstalled.addListener((details) => {
             stats: initialStats,
             activeTask: null,
             timerState: null,
-            blockedSites: [],
+            blockedSites: DEFAULT_BLOCKED_SITES,
         });
     }
-    // Ensure rules are cleared on installation
-    updateBlockingRules();
 });
 
-// Listen for changes in storage to update blocking rules dynamically
-chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'local' && (changes.activeTask || changes.blockedSites)) {
-        updateBlockingRules();
-    }
-});
-
-// Open the side panel on the action button click.
 chrome.action.onClicked.addListener((tab) => {
   chrome.sidePanel.open({ windowId: tab.windowId });
 });

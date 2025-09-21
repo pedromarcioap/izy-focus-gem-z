@@ -1,9 +1,7 @@
-
-
 import React, { useState } from 'react';
-import AIFeedback from './AIFeedback';
 import { useStatsCalculations, formatDuration, formatBestDay, formatWeekRange, formatMonthName } from '../hooks/useStatsCalculations';
 import { Stats } from '../types';
+import AIFeedback from './AIFeedback'; // Added import
 
 interface StatCardProps {
   title: string;
@@ -28,15 +26,15 @@ interface TabButtonProps {
 const TabButton: React.FC<TabButtonProps> = ({ label, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`px-4 py-2 text-sm font-semibold transition-colors duration-200 focus:outline-none focus:text-brand ${
-            isActive
-                ? 'text-brand border-b-2 border-brand'
-                : 'text-slate hover:text-lightest-slate'
-        }`}
+        className={`button-primary tab-button-override${isActive ? ' tab-active' : ''}`}
     >
         {label}
     </button>
 );
+
+// Adicione no CSS global (style.css) se quiser manter o override visual:
+// .tab-button-override { border-radius: 0; background: transparent; box-shadow: none; }
+// .tab-active { color: var(--brand); background: var(--light-navy); border-bottom: 2px solid var(--brand); }
 
 interface PlaceholderTabProps {
     title: string;
@@ -62,55 +60,54 @@ const StatsPage: React.FC<StatsPageProps> = ({ stats }) => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('GENERAL');
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-lightest-slate">Your Focus Journey</h2>
-        <p className="text-slate mt-2">An overview of your productivity patterns and achievements.</p>
-      </div>
-      
-      <div className="border-b border-lightest-navy/20 flex justify-center space-x-2 md:space-x-4">
-        <TabButton label="General" isActive={activeTab === 'GENERAL'} onClick={() => setActiveTab('GENERAL')} />
-        <TabButton label="Tasks" isActive={activeTab === 'TASKS'} onClick={() => setActiveTab('TASKS')} />
-        <TabButton label="Month" isActive={activeTab === 'MONTH'} onClick={() => setActiveTab('MONTH')} />
-      </div>
+    <div className="dashboard-container">
+        <div className="dashboard-header-card">
+            <h2 className="dashboard-header-title">Your Focus Journey</h2>
+            <p className="dashboard-header-subtitle">An overview of your productivity patterns and achievements.</p>
+        </div>
 
-      <div>
-        {activeTab === 'GENERAL' && (
-            <div className="space-y-6">
-                <div className="bg-light-navy p-4 md:p-6 rounded-lg">
-                    <h3 className="text-lg font-bold text-light-slate mb-4">Current Stats</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        <StatCard title="Today" value={formatDuration(currentStats.today)} />
-                        <StatCard title="This week" value={formatDuration(currentStats.thisWeek)} />
-                        <StatCard title="This month" value={formatDuration(currentStats.thisMonth)} />
+        <div className="border-b border-lightest-navy/20 flex justify-center space-x-2 md:space-x-4">
+            <TabButton label="General" isActive={activeTab === 'GENERAL'} onClick={() => setActiveTab('GENERAL')} />
+            <TabButton label="Tasks" isActive={activeTab === 'TASKS'} onClick={() => setActiveTab('TASKS')} />
+            <TabButton label="Month" isActive={activeTab === 'MONTH'} onClick={() => setActiveTab('MONTH')} />
+        </div>
+
+        <div>
+            {activeTab === 'GENERAL' && (
+                <div className="space-y-6">
+                    <div className="bg-light-navy p-4 md:p-6 rounded-lg">
+                        <h3 className="text-lg font-bold text-light-slate mb-4">Current Stats</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <StatCard title="Today" value={formatDuration(currentStats.today)} />
+                            <StatCard title="This week" value={formatDuration(currentStats.thisWeek)} />
+                            <StatCard title="This month" value={formatDuration(currentStats.thisMonth)} />
+                        </div>
                     </div>
-                </div>
 
-                <div className="bg-light-navy p-4 md:p-6 rounded-lg">
-                    <h3 className="text-lg font-bold text-light-slate mb-4">Average Results</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        <StatCard title="Daily" value={formatDuration(averageResults.daily)} />
-                        <StatCard title="Weekly" value={formatDuration(averageResults.weekly)} />
-                        <StatCard title="Monthly" value={formatDuration(averageResults.monthly)} />
+                    <div className="bg-light-navy p-4 md:p-6 rounded-lg">
+                        <h3 className="text-lg font-bold text-light-slate mb-4">Average Results</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <StatCard title="Daily" value={formatDuration(averageResults.daily)} />
+                            <StatCard title="Weekly" value={formatDuration(averageResults.weekly)} />
+                            <StatCard title="Monthly" value={formatDuration(averageResults.monthly)} />
+                        </div>
                     </div>
-                </div>
-                
-                <div className="bg-light-navy p-4 md:p-6 rounded-lg">
-                    <h3 className="text-lg font-bold text-light-slate mb-4">Best Results</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        <StatCard title="Day" value={formatDuration(bestResults.day.total)} subtext={formatBestDay(bestResults.day.date)} />
-                        <StatCard title="Week" value={formatDuration(bestResults.week.total)} subtext={formatWeekRange(bestResults.week.date)} />
-                        <StatCard title="Month" value={formatDuration(bestResults.month.total)} subtext={formatMonthName(bestResults.month.month)} />
+                    
+                    <div className="bg-light-navy p-4 md:p-6 rounded-lg">
+                        <h3 className="text-lg font-bold text-light-slate mb-4">Best Results</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <StatCard title="Day" value={formatDuration(bestResults.day.total)} subtext={formatBestDay(bestResults.day.date)} />
+                            <StatCard title="Week" value={formatDuration(bestResults.week.total)} subtext={formatWeekRange(bestResults.week.date)} />
+                            <StatCard title="Month" value={formatDuration(bestResults.month.total)} subtext={formatMonthName(bestResults.month.month)} />
+                        </div>
                     </div>
+                    <AIFeedback stats={stats} /> {/* Added AIFeedback component */}
                 </div>
+            )}
 
-                <AIFeedback stats={stats} />
-            </div>
-        )}
-
-        {activeTab === 'TASKS' && <PlaceholderTab title="Task Stats" message="A detailed breakdown of focus time per task is coming soon!" />}
-        {activeTab === 'MONTH' && <PlaceholderTab title="Monthly Stats" message="A monthly summary view is in the works." />}
-      </div>
+            {activeTab === 'TASKS' && <PlaceholderTab title="Task Stats" message="A detailed breakdown of focus time per task is coming soon!" />}
+            {activeTab === 'MONTH' && <PlaceholderTab title="Monthly Stats" message="A monthly summary view is in the works." />}
+        </div>
     </div>
   );
 };

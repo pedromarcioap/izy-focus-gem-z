@@ -1,28 +1,16 @@
-
-
 import React, { CSSProperties } from 'react';
 
 const assetStyle: CSSProperties = {
   position: 'absolute',
   transform: 'translate(-50%, -50%)',
   transition: 'all 0.5s ease-in-out',
-  opacity: 0,
-  animation: 'fadeIn 0.5s ease-out forwards',
+  opacity: 1,
 };
-
-const keyframes = `
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
-`;
 
 export const IsometricGardenBase: React.FC = () => (
   <div className="absolute w-10/12 h-10/12">
-    <style>{keyframes}</style>
     <svg viewBox="0 0 200 100" className="w-full h-full">
-      <polygon points="100,0 200,50 100,100 0,50" className="fill-green-800/50 stroke-green-900/50 stroke-1" />
+      <polygon points="100,0 200,50 100,100 0,50" style={{ fill: '#2f855a', stroke: '#276749', strokeWidth: 1 }} />
     </svg>
   </div>
 );

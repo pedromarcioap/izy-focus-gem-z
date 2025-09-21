@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Foco Total!</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Additional styles for this page specifically */
+    .blocked-icon {
+      width: 6rem; /* 96px */
+      height: 6rem; /* 96px */
+      color: var(--error);
+      margin-bottom: var(--spacing-md);
+    }
+    .close-button {
+      margin-top: var(--spacing-lg);
+      /* Extending button-primary for this specific use */
+      background-color: var(--lightest-navy);
+      color: var(--lightest-slate);
+    }
+    .close-button:hover {
+      background-color: var(--slate);
+      color: var(--navy);
+    }
+  </style>
+</head>
+<body class="bg-navy">
+  <div class="app-container flex items-center justify-center text-center p-6">
+    <div class="dashboard-header-card max-w-lg mx-auto p-6">
+      
+      <!-- Stop Icon SVG -->
+      <svg class="blocked-icon mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+      </svg>
+
+      <h1 class="dashboard-header-title text-3xl font-bold text-error">Site Bloqueado</h1>
+      
+      <p class="dashboard-header-subtitle text-light-slate mt-2">
+        Este site está na sua lista de distrações.
+      </p>
+      
+      <div class="mt-6 bg-navy p-4 rounded-lg">
+        <p class="text-lg font-semibold text-brand">Mantenha o foco, você consegue!</p>
+        <p class="text-slate mt-1">Voltar à sua tarefa agora vai te deixar mais perto do seu objetivo.</p>
+      </div>
+
+      <button id="closeTabBtn" class="button-primary close-button">
+        Voltar ao Foco
+      </button>
+
+    </div>
+  </div>
+
+  <script>
+    // Simple script to close the current tab when the button is clicked
+    document.getElementById('closeTabBtn').addEventListener('click', () => {
+      window.close();
+    });
+  </script>
+
+</body>
+</html>
