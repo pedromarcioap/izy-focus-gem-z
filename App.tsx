@@ -1,77 +1,45 @@
-import React, { useState, useCallback, useEffect } from 'react';
-// Removed import { useLocalStorage } from './hooks/useLocalStorage';
+import React, { useState, useCallback } from 'react';
+import { useStorage } from './hooks/useStorage';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import StatsPage from './components/StatsPage';
 import BlocklistManager from './components/BlocklistManager';
 import GardenPage from './components/GardenPage';
 import AISettings from './components/AISettings';
-import { initialTasks, initialStats } from './constants';
+import { initialTasks, initialStats, DEFAULT_BLOCKED_SITES } from './constants';
 import FocusTimer from './components/FocusTimer';
 import { Task, Stats, TimerState, View, SessionLog } from './types';
 
-// Define initial values for all storage keys
-const initialStorageValues = {
-  tasks: initialTasks,
-  stats: initialStats,
-  activeTask: null,
-  timerState: null,
-  blockedSites: [],
-  openRouterApiKey: '',
-  openRouterModel: 'openai/gpt-3.5-turbo',
-};
-
 const App = () => {
-  // Use a single state for all storage-managed values
-  const [storageValues, setStorageValues] = useState(initialStorageValues);
-  const [isStorageLoaded, setIsStorageLoaded] = useState(false);
   const [view, setView] = useState<View>('DASHBOARD');
 
-  // Load all values from chrome.storage.local once
-  useEffect(() => {
-    console.log('App: Loading all storage values...');
-    chrome.storage.local.get(Object.keys(initialStorageValues), (result) => {
-      console.log('App: All storage values loaded:', result);
-      setStorageValues(prev => ({ ...prev, ...result }));
-      setIsStorageLoaded(true);
-    });
-  }, []);
+  const [tasks, setTasks, tasksLoaded] = useStorage<Task[]>('tasks', initialTasks);
+  const [stats, setStats, statsLoaded] = useStorage<Stats>('stats', initialStats);
+  const [activeTask, setActiveTask, activeTaskLoaded] = useStorage<Task | null>('activeTask', null);
+  const [timerState, setTimerState, timerStateLoaded] = useStorage<TimerState | null>('timerState', null);
+  const [blockedSites, setBlockedSites, blockedSitesLoaded] = useStorage<string[]>('blockedSites', DEFAULT_BLOCKED_SITES);
+  const [openRouterApiKey, setOpenRouterApiKey, openRouterApiKeyLoaded] = useStorage<string>('openRouterApiKey', '');
+  const [openRouterModel, setOpenRouterModel, openRouterModelLoaded] = useStorage<string>('openRouterModel', 'openai/gpt-3.5-turbo');
 
-  // Function to update a specific storage key
-  const setStorageValue = useCallback((key: keyof typeof initialStorageValues, value: any) => {
-    setStorageValues(prev => {
-      const newValues = { ...prev, [key]: value };
-      chrome.storage.local.set({ [key]: value }, () => {
-        console.log(`App: Stored ${key} with value:`, value);
-      });
-      return newValues;
-    });
-  }, []);
+  const isStorageLoaded = tasksLoaded && statsLoaded && activeTaskLoaded && timerStateLoaded && blockedSitesLoaded && openRouterApiKeyLoaded && openRouterModelLoaded;
 
-  // Destructure values for easier use
-  const { tasks, stats, activeTask, timerState, blockedSites, openRouterApiKey, openRouterModel } = storageValues;
-
-  // ... rest of the App component logic ...
-
-  // handleTaskStart
   const handleTaskStart = (task: Task) => {
     const durationInSeconds = task.duration * 60;
     const targetEndTime = Date.now() + durationInSeconds * 1000;
 
     chrome.alarms.create('focusTimer', { when: targetEndTime });
     
-    setStorageValue('activeTask', task); // Use new setter
-    setStorageValue('timerState', { targetEndTime, taskDuration: durationInSeconds }); // Use new setter
+    setActiveTask(task);
+    setTimerState({ targetEndTime, taskDuration: durationInSeconds });
   };
 
-  // handleSessionEnd
   const handleSessionEnd = useCallback((status: 'interrupted', timeElapsedInSeconds?: number) => {
     if (!activeTask) return;
 
     chrome.alarms.clear('focusTimer');
 
     const durationInSeconds = timerState?.taskDuration ?? activeTask.duration * 60;
-    const timeElapsed = timeElapsedInSeconds ?? (durationInSeconds - Math.max(0, (timerState.targetEndTime - Date.now()) / 1000));
+    const timeElapsed = timeElapsedInSeconds ?? (durationInSeconds - Math.max(0, (timerState!.targetEndTime - Date.now()) / 1000));
     const actualDurationMinutes = Math.round(timeElapsed / 60);
 
     if (status === 'interrupted' && actualDurationMinutes > 0) {
@@ -86,7 +54,7 @@ const App = () => {
         status,
       };
       
-      setStorageValue('stats', { // Use new setter
+      setStats({
           ...stats,
           interruptedSessions: stats.interruptedSessions + 1,
           totalFocusTime: stats.totalFocusTime + actualDurationMinutes,
@@ -94,13 +62,12 @@ const App = () => {
       });
     }
     
-    setStorageValue('activeTask', null); // Use new setter
-    setStorageValue('timerState', null); // Use new setter
-  }, [activeTask, timerState, stats, setStorageValue]); // Add setStorageValue to dependencies
+    setActiveTask(null);
+    setTimerState(null);
+  }, [activeTask, timerState, stats, setStats, setActiveTask, setTimerState]);
 
-  // Render only after storage is loaded
   if (!isStorageLoaded) {
-    return <div className="app-loading">Loading extension data...</div>; // Simple loading state
+    return <div className="app-loading">Loading extension data...</div>;
   }
 
   return (
@@ -111,12 +78,12 @@ const App = () => {
            <FocusTimer
             task={activeTask}
             onInterrupt={(timeElapsed) => handleSessionEnd('interrupted', timeElapsed)}
-            timerState={timerState} // Pass timerState as prop
+            timerState={timerState}
            />
         ) : view === 'DASHBOARD' ? (
           <Dashboard
             tasks={tasks}
-            setTasks={(newTasks) => setStorageValue('tasks', newTasks)} // Use new setter
+            setTasks={setTasks}
             stats={stats}
             onTaskStart={handleTaskStart}
           />
@@ -129,22 +96,15 @@ const App = () => {
         ) : view === 'AI_SETTINGS' ? (
           <AISettings
             openRouterApiKey={openRouterApiKey}
-            setOpenRouterApiKey={(key) => setStorageValue('openRouterApiKey', key)} // Use new setter
+            setOpenRouterApiKey={setOpenRouterApiKey}
             openRouterModel={openRouterModel}
-            setOpenRouterModel={(model) => setStorageValue('openRouterModel', model)} // Use new setter
+            setOpenRouterModel={setOpenRouterModel}
           />
         ) : view === 'SETTINGS' ? (
-          (() => {
-            try {
-              return <BlocklistManager
-                blockedSites={blockedSites}
-                setBlockedSites={(newSites) => setStorageValue('blockedSites', newSites)} // Use new setter
-              />;
-            } catch (err) {
-              console.error('Erro ao renderizar Settings (BlocklistManager):', err);
-              return <div style={{color: 'red', padding: 16}}>Erro ao carregar Settings. Veja o console para detalhes.</div>;
-            }
-          })()
+          <BlocklistManager
+            blockedSites={blockedSites}
+            setBlockedSites={setBlockedSites}
+          />
         ) : null}
       </main>
     </div>
