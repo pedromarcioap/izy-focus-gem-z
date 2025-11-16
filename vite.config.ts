@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
         }
       },
       build: {
+        outDir: 'dist',
         rollupOptions: {
           input: {
             popup: path.resolve(__dirname, 'index.html'),
